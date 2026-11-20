@@ -1,7 +1,5 @@
 ------------------------------------------------------------------------
 
-editor_options: markdown: wrap: sentence ---
-
 # Homework 4.3 - Data Analysis, Visualization, Version Control, & Reflection
 
 This repository holds the outputs and data sets from Homework 4.3. This repository demonstrates version control workflows and reproducible work using Quarto.

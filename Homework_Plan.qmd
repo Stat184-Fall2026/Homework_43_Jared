@@ -1,0 +1,124 @@
+# Project and Repository Plan: HW 4.4
+
+## Part 1: HW 4.3 Project Plan
+
+### Goal
+
+The goal for this project is to create a quarto markdown document that satisfies the requirements of the assignment, by including the several needed sections.
+
+#### Sub Goals
+
+1.  Create and analyze three data tables by using and improving my old diamonds data code.
+2.  Insert and analyze the Big 10 NCAA plot from my old data visualization code, applying improvements.
+3.  Insert and analyze the Monte Carlo plots from my old code, making improvements and adjustments.
+4.  Conduct an comparison between human-made work, AI work based on a human-made plan, and AI work based on a generic prompt.
+5.  Write a reflection section.
+6.  Complete an appendix detailing all uses of GenAI.
+7.  Insert a properly-formatted code appendix.
+
+### Needs
+
+#### Nouns
+
+- **Software:** RStudio, Quarto, R
+- **Packages & Data:** tidyverse, knitr, kableExtra, diamonds, ggimage, ggrepel, patchwork, calcium.csv
+- **Reference Materials:** MyOpenMath Instructions, Quarto Crash Course
+- **Old Code:** Homework 3.4 Big 10 code, Homework 3.4 Monte Carlo code, Homework 3.2 Diamonds code
+- **GenAI:** ChatGPT-6, ASU Image Accessibility AI Tool, generic prompt, informed prompt, ChatGPT
+- **YAML Header:** author, date, title
+- **Code-related:** dimensions, weight
+- **Other:** narrative text, sub figure, figure, section, AI Usage appendix
+
+#### Verbs
+
+- **General Verbs:** open, set up, summarize, bring, write, wrangle, make, insert
+- **Coding Verbs:** library(), data()
+
+### Steps
+
+1.  Open a Quarto Markdown document in RStudio
+2.  Set up a YAML header with the proper parameters in place for a pdf format
+
+- Make sure author, date, and title are properly set up for reproducibility purposes
+
+3.  Set up R code chunk to load all needed packages and data for later
+
+- Use library() and data() to bring in tidyverse, knitr, kableExtra, ggimage, ggrepel, patchwork, and diamonds
+
+4.  Bring in the Homework 3.2 Diamonds data wrangling code, and edit it to summarize the dimensions of the diamond rather than the weight
+
+- Add the code three times, one for each dimension, to make three tables
+- Add narrative text for each table and for the overall set
+
+5.  Bring in the Homework 3.4 Big 10 Code to recreate the NCAA plot
+
+- Write narrative text for the plot
+
+6.  Bring in the Homework 3.4 Monte Carlo code.
+
+- Use it to make a figure with 4 sub figures, one for each sample size
+- Use the ASU Image Accessibility Tool to get alt text for each sub figure
+- Write narrative text about the Monte Carlo plot and the sub figures
+
+7.  Conduct the comparison between generic prompt AI work, informed prompt AI work, and human work
+
+- Write a detailed plan to wrangle the calcium.csv file and make a data visualization for it
+- Download the generic prompt response and chart from the MyOpenMath instructions and insert it
+- Give the plan to ChatGPT, and insert its exact response
+- Use the plan to write my own code and insert it
+- Use the ASU Image Accessibility Tool to generate alt text for each of the plots, inserting exact responses
+- Write narrative text comparing and contrasting the three plots
+
+8.  Write a section that conveys what I've learned throughout the course, being truly critical and reflective
+9.  Create the AI Usage appendix
+
+- Track all the alt texts I made using AI, and insert the prompts and exact responses I received for them
+- Insert the exact prompts and responses used for generating the plan-informed chart from step 7
+
+10. Add a code appendix using a proper set up to guarantee the code doesn't show up in the main part of the document
+
+- Review appendix and fix lines that were over 80 characters
+
+11. Review document and MyOpenMath instructions, making sure there are no major errors
+
+- Check for proper cross referencing
+- Check Quarto Crash Course to make sure techniques were applied correctly
+- Fix and improve anything that needs it
+
+12. Render the file and download it as a pdf for submission
+
+------------------------------------------------------------------------
+
+## Part 2: HW 4.4 GitHub Repository Setup & Maintenance Plan
+
+### Goal
+
+The goal for this project is to create a GitHub repository for the work from Homework 4.3, and to maintain it by finding and solving issues, making commits, and having a README file.
+
+### Needs
+
+#### Nouns
+- **Software:** GitHub, GitHub Desktop, Quarto, R Studio, Google Chrome
+- **Project Files:** Homework_43.qmd, Homework_43.pdf, Homework_Plan.md, README
+- **GitHub:** Homework_43_Jared repository, dev_Jared branch, commit summary, main branch, owner, Stat184-Fall2026, HW4.4 Template, issue, user, tags, pull request
+
+#### Verbs
+- **General Verbs:** open, set, add, allocate, create, write, update
+- **GitHub:** commit, push, pull, reference, close
+
+### Steps
+1. Open GitHub on Google Chrome, and make a new repository, Homework_43_Jared
+  - Set the owner to Stat184_Fall2026, and use the HW4.4 Template, but make sure repo is public
+2. Open two issues, one to add needed files, and one to add README
+  - Allocate the issues to user (me), and set proper tags
+3. Create a new branch, dev_Jared for edits to go to
+4. On dev_Jared, commit Homework_43.qmd, Homework_43.pdf, and Homework_Plan.md
+  - Write commit summaries
+5. On dev_Jared commit changes to README, updating it with project information
+6. Push dev_Jared to GitHub
+7. Open a pull request to merge dev_Jared into the main branch
+  - Close the issues by referencing them
+8. Have the main branch as the final product
+  - Check for any issues before ending work
+  - For an issue, make an issue, and then fix the problem, before making a commit on dev_Jared, then merge with a pull request to the main branch
+

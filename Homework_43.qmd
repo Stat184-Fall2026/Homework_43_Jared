@@ -1,0 +1,1242 @@
+---
+title: "Homework 4.3 Reproducible Data Analysis"
+author: "Jared Stoddart"
+date: "Nov. 7, 2026"
+date-modified: now
+lang: en
+format: 
+  pdf: 
+    toc: false
+    number-sections: true
+    number-depth: 5
+    fig-align: center
+    cap-location: top
+    geometry: 
+      - top=1in
+      - left=1in
+      - right=1in
+      - bottom=1in
+    colorlinks: true
+    
+execute: 
+  echo: false
+  warning: false
+editor: 
+  markdown: 
+    wrap: 80
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+library(tidyverse)
+library(knitr)
+library(kableExtra)
+data(diamonds)
+library(ggimage)
+library(ggrepel)
+library(patchwork)
+```
+
+# Diamonds Table of Statistics
+
+In order to examine the dimensions of diamonds across different tiers of
+quality, descriptive statistics were calculated for their length, width, and
+depth, grouped by the quality of their cut. @tbl-length shows us that Ideal cut
+diamonds are the smallest in terms of length across most of the descriptive
+statistics, while Fair cut diamonds are the largest and the least variable.
+
+```{r}
+#| label: tbl-length
+#| tbl-cap: "Descriptive Statistics of Diamond Length (mm) by Cut Quality"
+#| tbl-pos: H
+
+# Step 3: Make new data frame and select only needed data ----
+diamondsLength <- diamonds |>
+  select(cut, x)|>
+  filter(x != 0) |>
+  # Step 4: group by cut ----
+group_by(cut) |>
+  ## Step 5: create descriptive statistics ----
+summarize(
+  Count = n(),
+  Minimum = min(x),
+  Quintile1 = quantile(x, probs = 0.20),
+  Quintile2 = quantile(x, probs = 0.40),
+  Median = median(x),
+  Quintile3 = quantile(x, probs = 0.60),
+  Quintile4 = quantile(x, probs = 0.80),
+  Maximum = max(x),
+  Mean = mean(x),
+  StandardDeviation = sd(x),
+  .groups = "drop"
+)
+## Step 6: Create clean table ----
+diamondsLength |>
+  kable(
+    digits = 2,
+    col.names = c("Cut Quality", "Freq.", "Min", "20%-tile", "40%-tile",
+                  "Median", "60%-tile", "80%-tile", "Max", "SAM", "SASD"),
+    format.args = list(big.mark = ","),
+    align = "lcccccccccc",
+    format = "latex"
+  ) |>
+  kable_classic(font_size = 10, lightable_options = "striped") |>
+    add_footnote(
+    label = c("Length was measured in milimeters."),
+    notation = "none",
+    threeparttable = TRUE) |>
+  kable_styling(latex_options = "scale_down")
+```
+
+@tbl-width summarizes the distribution of diamond width (`y`) across cut
+categories, displaying that Fair cut diamonds are the widest and most variable
+cut of diamond according to most descriptive statistics, and that Ideal cut
+diamonds are of the smallest width and least variability. However, both the
+Premium cut and Ideal Cut diamonds have very large outlier maximums, multiple
+times larger than the maximums of the other three cuts.
+
+```{r}
+#| label: tbl-width
+#| tbl-cap: "Descriptive Statistics of Diamond Width (mm) by Cut Quality"
+#| tbl-pos: H
+
+# Step 3: Make new data frame and select only needed data ----
+diamondsWidth <- diamonds |>
+  select(cut, y) |>
+    filter(y != 0) |>
+  # Step 4: group by cut ----
+group_by(cut) |>
+  ## Step 5: create descriptive statistics ----
+summarize(
+  Count = n(),
+  Minimum = min(y),
+  Quintile1 = quantile(y, probs = 0.20),
+  Quintile2 = quantile(y, probs = 0.40),
+  Median = median(y),
+  Quintile3 = quantile(y, probs = 0.60),
+  Quintile4 = quantile(y, probs = 0.80),
+  Maximum = max(y),
+  Mean = mean(y),
+  StandardDeviation = sd(y),
+  .groups = "drop"
+)
+## Step 6: Create clean table ----
+diamondsWidth |>
+  kable(
+    digits = 2,
+    col.names = c("Cut Quality", "Freq.", "Min", "20%-tile", "40%-tile",
+                  "Median", "60%-tile", "80%-tile", "Max", "SAM", "SASD"),
+    format.args = list(big.mark = ","),
+    align = "lcccccccccc",
+    format = "latex"
+  ) |>
+  kable_classic(font_size = 10, lightable_options = "striped") |>
+    add_footnote(
+    label = c("Width was measured in milimeters."),
+    notation = "none",
+    threeparttable = TRUE) |>
+  kable_styling(latex_options = "scale_down")
+```
+
+The distribution of the diamond depths as shown in @tbl-depth follows a similar
+pattern to that of length and width, as the Ideal cut diamonds are once again
+the smallest in depth according to most of the summary statistics, and the Fair
+cut diamonds are the largest. The Fair cut diamonds are the most variable, and
+the Ideal cut diamonds the least variable. There is an outlier maximum in the
+Very Good cut diamonds, as their maximum value is far larger than that of all
+the other cuts.
+
+```{r}
+#| label: tbl-depth
+#| tbl-cap: "Descriptive Statistics of Diamond Depth by Cut Quality"
+#| tbl-pos: H
+
+# Step 3: Make new data frame and select only needed data ----
+diamondsDepth <- diamonds |>
+  select(cut, z) |>
+    filter(z != 0) |>
+  # Step 4: group by cut ----
+group_by(cut) |>
+  ## Step 5: create descriptive statistics ----
+summarize(
+  Count = n(),
+  Minimum = min(z),
+  Quintile1 = quantile(z, probs = 0.20),
+  Quintile2 = quantile(z, probs = 0.40),
+  Median = median(z),
+  Quintile3 = quantile(z, probs = 0.60),
+  Quintile4 = quantile(z, probs = 0.80),
+  Maximum = max(z),
+  Mean = mean(z),
+  StandardDeviation = sd(z),
+  .groups = "drop"
+)
+## Step 6: Create clean table ----
+diamondsDepth |>
+  kable(
+    digits = 2,
+    col.names = c("Cut Quality", "Freq.", "Min", "20%-tile", "40%-tile",
+                  "Median", "60%-tile", "80%-tile", "Max", "SAM", "SASD"),
+    format.args = list(big.mark = ","),
+    align = "lcccccccccc",
+    format = "latex"
+  ) |>
+  kable_classic(font_size = 10, lightable_options = "striped") |>
+    add_footnote(
+    label = c("Depth was measured in milimeters."),
+    notation = "none",
+    threeparttable = TRUE) |>
+  kable_styling(latex_options = "scale_down")
+```
+
+Across @tbl-length, @tbl-width, and @tbl-depth, the trend of fair cut diamonds
+being the largest and ideal cut diamonds being the smallest across their
+respective dimensions is revealed. Additionally, the trend of fair cut diamonds
+having the highest variability and ideal cut diamonds having the lowest
+variability is shown, which aligns with the fact that fair cut diamonds have the
+smallest frequency, and the ideal cut diamonds have the largest, each by a
+sizable margin.
+
+# Big 10 Academic Alliance - Love Data Week
+
+```{r}
+#| label: fig-ncaaShooting
+#| fig-cap: >-
+#|  "2026 NCAA Women's Basketball AP Top 25 Shooting Efficiency 
+#|  Landscape by Win Tier"
+#| fig-alt: >-
+#|  "Two-panel scatter plot of 2026 women’s basketball teams, with team logos
+#|  positioned by team and opponent field-goal percentages; elite-tier teams
+#|  include several high-shooting, strong-defense teams."
+#| fig-width: 10
+#| fig-height: 5.5
+
+# Step 2: Load Data ----
+box_raw <- read.csv(
+  file = "team_box.csv",
+  header = TRUE,
+  sep = ","
+)
+# Step 3A: Filter out unneeded seasons ----
+box_tidy <- box_raw |>
+  filter(season == 2026)
+# Step 3B: Create Opponent Data Frame ----
+opp_box <- box_raw |>
+  filter(season == 2026) |>
+  select(
+    game_id,
+    opponent = team_slug,
+    opp_fg_pct = field_goal_pct
+  )
+# Step 3C: Combine to one data frame ----
+box_total <- box_tidy |>
+  inner_join(opp_box, by = "game_id") |>
+  filter(team_slug != opponent)
+# Step 4C: Combine into season averages ----
+box_averages <- box_total |>
+  group_by(team_slug, team_abbreviation, team_logo) |>
+  summarize(
+    game_count = n(),
+    win_pct = round(mean(team_winner, na.rm = TRUE), digits = 2),
+    avg_team_fg_pct = round(mean(field_goal_pct, na.rm = TRUE),digits = 2),
+    avg_opp_fg_pct = round(mean(opp_fg_pct, na.rm = TRUE),digits = 2),
+    .groups = "drop"
+  )
+# Step 5: Load Ranking data ----
+rankings_raw <- read.csv(
+  file = "rankings.csv",
+  header = TRUE,
+  sep = ","
+)
+# Step 6A: Wrangle Ranking Data ----
+rankings_tidy <- rankings_raw |>
+  slice_head( n = 25) |>
+  select(current, team_abbreviation)
+#Step 6B: Join Data Frames ----
+top_box <- box_averages |>
+  inner_join(rankings_tidy, by = "team_abbreviation") |>
+  filter(game_count >= 30) |>
+  select(-team_abbreviation)
+# Step 6C: Calculate center lines ----
+mean_x <- mean(top_box$avg_team_fg_pct)
+mean_y <- mean(top_box$avg_opp_fg_pct)
+# Step 7: Facet Data ----
+top_box_faceted <- top_box |>
+  mutate(
+    win_tier = case_when(
+      win_pct >= 0.80 ~ "Elite Tier (80%+ Wins)",
+      win_pct >= 0.65 ~ "Contender Tier (65%-79% Wins)"
+    ),
+    win_tier = factor(win_tier, 
+        levels = c("Contender Tier (65%-79% Wins)","Elite Tier (80%+ Wins)"))
+  )
+# Step 8: Create Plot ----
+ggplot(
+  data = top_box_faceted,
+  mapping = aes(
+    x = avg_team_fg_pct,
+    y = avg_opp_fg_pct
+  )) +
+  geom_vline(xintercept = mean_x, alpha = 0.75) +
+  geom_hline(yintercept = mean_y, alpha = 0.75) +
+  geom_image(
+    mapping = aes(
+      image = team_logo),
+    size = 0.07,
+    by = "width",
+    use_cache = TRUE) +
+  scale_y_reverse() +
+  facet_wrap(~win_tier) +
+  labs(
+    x = "Average Team Season Field Goal %",
+    y = "Average Opponent Season Field Goal %",
+    title = "NCAA Women's Basketball 2026 Shooting Efficiency Landscape",
+    subtitle = 
+      "AP Top 25 Teams Final 2026 Season Rankings Faceted by Win Thresholds",
+  ) +
+  annotate("text", x = mean_x - 3.5, y = mean_y + 4,
+           label = "Weak Both Ways", color = "#999999", size = 2.5) +
+  annotate("text", x = mean_x + 3.5, y = mean_y + 4,
+           label = "Strong Offense & Weak Defense",
+           color = "#999999", size = 2.5) +
+  annotate("text", x = mean_x - 3, y = mean_y - 4,
+           label = "Weak Offense & Strong Defense",
+           color = "#999999", size = 2.5) +
+  annotate("text", x = mean_x + 2.5, y = mean_y - 4,
+           label = "Strong Both Ways", color = "#999999", size = 2.5) +
+  theme_bw() +
+  annotate(
+    "text", 
+    x = mean_x, 
+    y = min(top_box$avg_opp_fg_pct, na.rm = TRUE), 
+    label = paste0("Avg: ", round(mean_x * 1,2), "%"), 
+    angle = 90, 
+    vjust = -0.75,
+    hjust = 1,
+    color = "#999999",
+    size = 3
+  ) +
+  annotate(
+    "text", 
+    x = max(top_box$avg_team_fg_pct, na.rm = TRUE), 
+    y = mean_y, 
+    label = paste0("Avg: ", round(mean_y * 1,2), "%"), 
+    hjust = 1, 
+    vjust = -0.75,
+    color = "#999999",
+    size = 3
+  )
+```
+
+@fig-ncaaShooting reveals the relationships between three attributes of the top
+25 AP ranked NCAA women's basketball teams from the 2026 college season. The
+chart plots the relationship between each team's season average field goal
+percentage and that of their opponents. The chart is faceted into two
+subsections, with the strongest of the teams being on the right. This reveals
+that the majority of the best teams by winning percentage were elite in both
+scoring efficiency and defensive efficiency. Out of the teams that were above
+the average of 46.33% in scoring efficiency, seven out of the nine made it into
+the elite tier, showing the importance of efficient offense towards winning
+games. A smaller share of teams that were better than the average of 38.35% in
+the opponent average field goal percentage attribute made the elite tier at six
+out of twelve, showing that for these teams, offense was a better predictor of
+winning. Two teams in the elite tier were below average in both attributes,
+which reveals that these attributes are not perfect predictors of a team's
+success, and that there are other important aspects of basketball beyond those
+measured in the chart.
+
+# Monte Carlo Numerical Integration
+
+```{r}
+#| label: coordinateGeneration
+#| include: false
+
+generateCoords <- function(numPoints, xMin, xMax, yMin, yMax) {
+  simData <- tibble(
+    x = runif(numPoints, min = xMin, max = xMax),
+    y = runif(numPoints, min = yMin, max = yMax)
+  )
+  
+  return(simData)
+}
+```
+
+```{r}
+#| label: fig-monteCarlo
+#| fig-cap: >-
+#|  "Monte Carlo Numerical Integration Estimates for a Chi-Square
+#|   Distribution (df = 5) Across Sample Sizes"
+#| fig-subcap: 
+#|   - "Sample Size of 10"
+#|   - "Sample Size of 100"
+#|   - "Sample Size of 1000"
+#|   - "Sample Size of 10000"
+#| fig-alt: >-
+#|   - "Monte Carlo integration graph showing a curve that peaks near x = 3,
+#|    with eight magenta “above” points and two green “on/below” points;
+#|     estimated numerical integration is 0.64."
+#|   - "Scatter plot of 100 points around a curve that peaks near x = 3
+#|    and declines toward zero; points are colored red for “above” and green
+#|     for “on/below.” Estimated numerical integration: 1.216."
+#|   - "Scatter plot of 1,000 Monte Carlo points classified as above or
+#|    on/below a black curve; the estimated numerical integration is 0.9952."
+#|   - "Monte Carlo scatter plot of 10,000 points, with green points at or
+#|    below a peaked black curve and magenta points above; estimated numerical
+#|     integration is 1.0147."
+#| layout-ncol: 2
+#| aria-describedby: monteCarlo2LD
+#| fig-width: 8
+#| fig-height: 5.5
+#| fig-pos: H
+
+# Plot 1 ----
+set.seed(565)
+sim_data <- generateCoords(10, 0, 20, 0, 0.16)
+# Step 3: Flag point locations ----
+sim_data <- sim_data |>
+  mutate(
+    curveFunc = dchisq(x, df = 5),
+    Flag = ifelse(y <= curveFunc, "on/below", "above")
+  )
+# Step 4: Calculate numerical integration estimate ----
+boxArea = 20 * 0.16
+propBelow <- mean(sim_data$Flag == "on/below")
+estIntegration <- boxArea * propBelow
+# Step 5: Format text for display ----
+estLabel <- paste("Est. Numerical Integration = ", round(estIntegration, 4))
+# Step 6: Create Plot ----
+ggplot(
+    data = sim_data,
+    mapping = aes(
+     x = x,
+      y = y
+   ) 
+  ) +
+  geom_point(
+    mapping = aes(color = Flag)
+  ) +
+  stat_function(
+   fun = dchisq,
+   args = list(df = 5),
+   xlim = c(0, 20)
+   ) +
+  scale_color_manual(
+    values = c("#BC204B","#99CC00")
+  ) +
+  labs(
+   title = paste("Monte Carlo Integration Example, n =", nrow(sim_data)),
+    subtitle = estLabel,
+   x = "x",
+   y = "y",
+   color = "Flag"
+  ) +
+  theme_bw() +
+  theme(
+    legend.position = "bottom"
+  )
+
+# Plot 2 ----
+set.seed(565)
+sim_data <- generateCoords(100, 0, 20, 0, 0.16)
+# Step 3: Flag point locations ----
+sim_data <- sim_data |>
+  mutate(
+    curveFunc = dchisq(x, df = 5),
+    Flag = ifelse(y <= curveFunc, "on/below", "above")
+  )
+# Step 4: Calculate numerical integration estimate ----
+boxArea = 20 * 0.16
+propBelow <- mean(sim_data$Flag == "on/below")
+estIntegration <- boxArea * propBelow
+# Step 5: Format text for display ----
+estLabel <- paste("Est. Numerical Integration = ", round(estIntegration, 4))
+# Step 6: Create Plot ----
+ggplot(
+    data = sim_data,
+    mapping = aes(
+     x = x,
+      y = y
+   ) 
+  ) +
+  geom_point(
+    mapping = aes(color = Flag)
+  ) +
+  stat_function(
+   fun = dchisq,
+   args = list(df = 5),
+   xlim = c(0, 20)
+   ) +
+  scale_color_manual(
+    values = c("#BC204B","#99CC00")
+  ) +
+  labs(
+   title = paste("Monte Carlo Integration Example, n =", nrow(sim_data)),
+    subtitle = estLabel,
+   x = "x",
+   y = "y",
+   color = "Flag"
+  ) +
+  theme_bw() +
+  theme(
+    legend.position = "bottom"
+  )
+
+#Plot 3 ----
+set.seed(565)
+sim_data <- generateCoords(1000, 0, 20, 0, 0.16)
+# Step 3: Flag point locations ----
+sim_data <- sim_data |>
+  mutate(
+    curveFunc = dchisq(x, df = 5),
+    Flag = ifelse(y <= curveFunc, "on/below", "above")
+  )
+# Step 4: Calculate numerical integration estimate ----
+boxArea = 20 * 0.16
+propBelow <- mean(sim_data$Flag == "on/below")
+estIntegration <- boxArea * propBelow
+# Step 5: Format text for display ----
+estLabel <- paste("Est. Numerical Integration = ", round(estIntegration, 4))
+# Step 6: Create Plot ----
+ggplot(
+    data = sim_data,
+    mapping = aes(
+     x = x,
+      y = y
+   ) 
+  ) +
+  geom_point(
+    mapping = aes(color = Flag)
+  ) +
+  stat_function(
+   fun = dchisq,
+   args = list(df = 5),
+   xlim = c(0, 20)
+   ) +
+  scale_color_manual(
+    values = c("#BC204B","#99CC00")
+  ) +
+  labs(
+   title = paste("Monte Carlo Integration Example, n =", nrow(sim_data)),
+    subtitle = estLabel,
+   x = "x",
+   y = "y",
+   color = "Flag"
+  ) +
+  theme_bw() +
+  theme(
+    legend.position = "bottom"
+  )
+# Plot 4 ----
+set.seed(565)
+sim_data <- generateCoords(10000, 0, 20, 0, 0.16)
+# Step 3: Flag point locations ----
+sim_data <- sim_data |>
+  mutate(
+    curveFunc = dchisq(x, df = 5),
+    Flag = ifelse(y <= curveFunc, "on/below", "above")
+  )
+# Step 4: Calculate numerical integration estimate ----
+boxArea = 20 * 0.16
+propBelow <- mean(sim_data$Flag == "on/below")
+estIntegration <- boxArea * propBelow
+# Step 5: Format text for display ----
+estLabel <- paste("Est. Numerical Integration = ", round(estIntegration, 4))
+# Step 6: Create Plot ----
+ggplot(
+    data = sim_data,
+    mapping = aes(
+     x = x,
+      y = y
+   ) 
+  ) +
+  geom_point(
+    mapping = aes(color = Flag)
+  ) +
+  stat_function(
+   fun = dchisq,
+   args = list(df = 5),
+   xlim = c(0, 20)
+   ) +
+  scale_color_manual(
+    values = c("#BC204B","#99CC00")
+  ) +
+  labs(
+   title = paste("Monte Carlo Integration Example, n =", nrow(sim_data)),
+    subtitle = estLabel,
+   x = "x",
+   y = "y",
+   color = "Flag"
+  ) +
+  theme_bw() +
+  theme(
+    legend.position = "bottom"
+  )
+```
+
+@fig-monteCarlo reveals information about Monte Carlo simulations, primarily how
+simulations work, and the resulting numerical integration based off of them. It
+is shown that Monte Carlo simulation is the process of which a numerical
+integration is estimated by using points and flagging them based on whether they
+fit within a function. The small multiple displays that as the sample size of
+points increases in size, the variability of the Monte Carlo test decreases,
+leading to a more accurate answer with more points. I estimate the exact answer
+to the numerical integration is 1, as in each plot, as the sample size
+increases, the estimated numerical integration gets closer and closer to one,
+starting at being 0.36 away with 10 points as seen in @fig-monteCarlo-1, to
+0.0147 away with a sample size of 10,000 as seen in @fig-monteCarlo-4. The small
+multiple supports this conclusion by not only stating the estimated numerical
+integration for each plot, but also by displaying the results visually, with
+each subsequent plot becoming more dense, and therefore less variable. The small
+multiple would help somebody come to this conclusion by not only giving number
+figures for the estimates, but also by showing a visualization of what is
+actually being done to estimate the value of the numerical integration.
+
+# Planning and Prompting GenAI Tools
+
+In this section, I will compare and contrast the results of a AI-generated data
+visualization created using a specific human-created plan and an AI-generated
+visualization created using a generic prompt.
+
+## Plan {#sec-Plan}
+
+The First step of this section is to create a plan that I will give to an AI for
+it to attempt to wrangle the original data file and create a data visualization
+for it.
+
+### Goals & Sub-Goals
+
+The goal of this task is to analyze the development of calcium levels in each
+group over the three-year span using a data visualization.
+
+**Sub-Goals:**
+
+1.  Decide how to wrangle the data from its original formatting.
+2.  Wrangle the data into a clean format for creating the visualization.
+3.  Decide what type of data visualization would best suit the analysis.
+4.  Create the data visualization and customize Elementary Perceptual Tasks
+    (EPTs).
+
+### Nouns & Verbs
+
+**Nouns:**
+
+- **Importing and Loading:** `RStudio`, `tidyverse`
+- **Data Frames:** `calcium_raw`, `calcium_Tidy`
+- **Original Columns:** `y0`, `y1`, `y2`, `y3`, `y0.1`, `y1.1`, `y2.1`, `y3.1`
+- **Tidy Columns:** `raw_Name`, `year`, `group`, `calcium_Level`
+- **Other:** `calcium.csv`, `","`, `"y"`, `"."`, `align_start`, `control`,
+  `treatment`, `digits`, `data`
+- **Values:** `3`, `1.25`, `2.5`
+- **Colors:** `#1E407C`, `#BC204B`, `PSU palette`
+- **Plot-Related:** `x`, `y`, `color`, `linewidth`, `size`, `legend.position`,
+  `title`, `subtitle`
+
+**Verbs:**
+
+- **Data & Package Importing:** `library()`, `read.csv()`
+- **Summarizing:** `summarise()`, `across()`, `mean()`, `round()`,
+  `starts_with()`
+- **Tidying:** `pivot_longer()`, `everything()`, `separate_wider_delim()`,
+  `mutate()`, `as.numeric()`, `str_remove()`, `ifelse()`, `is.na()`
+- **Visualization:** `ggplot()`, `aes()`, `geom_line()`, `geom_point()`, `c()`,
+  `labs()`, `theme_bw()`, `theme()`, `scale_color_manual()`
+
+### Coding Plan
+
+1.  Open RStudio and load `tidyverse` using `library()`.
+2.  Use `read.csv()` to import `"calcium.csv"`, saving it into the new data
+    frame `calcium_raw`.
+    - Since it is a CSV file, set `sep` to `","`.
+3.  Use `summarise()` to compute the mean of all yearly measurements for the new
+    data frame `calcium_Tidy`.
+    - Within `summarise()`, use `across()` and `starts_with("y")` to cover all
+      original columns (`y0`, `y1`, `y2`, `y3`, `y0.1`, `y1.1`, `y2.1`, `y3.1`).
+    - Set `digits` within `round()` to `3` so the new values display three
+      decimal places.
+4.  Use `pivot_longer()` to reshape the data frame into a long format.
+    - Use `everything()` to apply the pivot to all columns.
+    - Send the column names to the new column `raw_Name`.
+    - Send the values to the new column `calcium_Level`.
+5.  Use `separate_wider_delim()` to split the `raw_Name` column.
+    - Set `delim` to `"."`, as this distinguishes between control and treatment
+      data.
+    - Use `c()` to set the names of the new columns to `year` and `group`.
+    - Set `too_few = "align_start"` to prevent errors from missing suffixes on
+      the control columns.
+6.  Use `mutate()` to tidy the new columns.
+    - Use `str_remove()` on `year` to remove the `"y"` prefix.
+    - Use `as.numeric()` to convert `year` into numerical values.
+    - Use `ifelse()` and `is.na()` on `group` to assign `"Control"` and
+      `"Treatment"` labels.
+7.  Create the data visualization.
+    - Use `ggplot()` with `data` set to `calcium_Tidy`.
+    - Set `mapping` using `aes()`, mapping `x` to `year`, `y` to
+      `calcium_Level`, and `color` to `group`.
+    - Use `geom_line()` to draw the lines, setting `linewidth` to `1.25`.
+    - Use `geom_point()` to plot the data points, setting `size` to `2.5`.
+    - Use `scale_color_manual()` with `c()` to set the line colors to `#1E407C`
+      and `#BC204B` from a PSU palette.
+    - Use `labs()` to set the labels for the title, legend color, x-axis,
+      y-axis, subtitle, and alt text.
+    - Use `theme_bw()` to apply a clean background theme.
+    - Use `theme()` and set `legend.position = "bottom"` to move the legend
+      below the plot.
+
+## ChatGPT-generated Plan-Informed Visualization vs. ChatGPT-generated Visualization Made With Generic Prompt
+
+In order to create a comparison between a data visualization created based on a
+human-made plan and that of a generic AI prompt, I created the plan seen above,
+and gave it to ChatGPT for it to follow, as well as received a generic ChatGPT
+response and the visualization that was included with it.
+
+## Plan-Informed AI Data Visualization
+
+```{r}
+#| label: fig-informedCalcium
+#| fig-cap: "Plan-Informed AI Calcium Study Analysis Plot"
+#| fig-alt: >- 
+#|  "Line graph of mean calcium levels for control and treatment groups across
+#|   Years 0–3; both groups drop sharply by Year 3."
+#| fig-width: 7
+#| fig-height: 4
+
+# Load packages
+library(tidyverse)
+
+# Import the original data
+calcium_raw <- read.csv("calcium.csv", sep = ",")
+
+# Calculate the mean for each year and group, rounded to three decimals
+calcium_Tidy <- calcium_raw %>%
+  summarise(
+    across(
+      starts_with("y"),
+      ~ round(mean(.x, na.rm = TRUE), digits = 3)
+    )
+  ) %>%
+  pivot_longer(
+    cols = everything(),
+    names_to = "raw_Name",
+    values_to = "calcium_Level"
+  ) %>%
+  separate_wider_delim(
+    raw_Name,
+    delim = ".",
+    names = c("year", "group"),
+    too_few = "align_start"
+  ) %>%
+  mutate(
+    year = as.numeric(str_remove(year, "y")),
+    group = ifelse(is.na(group), "Control", "Treatment")
+  )
+
+# Create the visualization
+calcium_Plot <- ggplot(
+  data = calcium_Tidy,
+  mapping = aes(x = year, y = calcium_Level, color = group)
+) +
+  geom_line(linewidth = 1.25) +
+  geom_point(size = 2.5) +
+  scale_color_manual(
+    values = c("Control" = "#1E407C", "Treatment" = "#BC204B")
+  ) +
+  labs(
+    title = "Mean Calcium Levels Over Three Years",
+    subtitle = "Comparison of the control and treatment groups",
+    color = "Group",
+    x = "Year",
+    y = "Mean Calcium Level",
+    alt = "Line graph comparing mean calcium levels in the control
+    and treatment groups from year 0 through year 3."
+  ) +
+  theme_bw() +
+  theme(
+    legend.position = "bottom"
+  )
+
+# Display the plot
+calcium_Plot
+```
+
+Here is the output of the AI generation that occurred alongside the
+visualization creation:
+
+"Prompt: "Use the following plan: (@sec-Plan) Calcium.csv"
+
+I've inspected the uploaded calcium.csv file. It contains 16 observations and 8
+columns, matching the original column structure in your plan: - y0, y1, y2, y3 —
+Control group - y0.1, y1.1, y2.1, y3.1 — Treatment group The appropriate
+approach is to calculate the mean calcium level for each group at each of the
+four time points (years 0–3), reshape the results into tidy format, and create a
+two-line comparison graph. 1. Completed visualization Completed
+
+The graph uses the requested PSU colors: - Control: Navy blue (#1E407C) -
+Treatment: Pink (#BC204B) 2. Calculated mean values Year Control Treatment 0
+72.380 69.288 1 73.293 70.656 2 72.473 71.181 3 64.787 64.531
+
+3.  Analysis
+
+- Both groups increase initially, although the control group peaks in Year 1.
+- The treatment group continues increasing through Year 2.
+- Both groups experience a substantial decline in Year 3.
+- The difference between the groups narrows considerably over time, from 3.092
+  in Year 0 to just 0.256 in Year 3.
+
+4.  Files
+
+- Download the completed visualization (PNG)
+- Download the complete RStudio script The R script follows your specified
+  workflow, including summarise(), across(), pivot_longer(),
+  separate_wider_delim(), mutate(), and ggplot().
+
+One important note: The script calculates the means before pivoting because the
+goal is to compare the average calcium levels of the two groups across the four
+years.
+
+Prompt: What is your version information? I am GPT-6, developed by OpenAI. -
+Model: GPT-6 - Knowledge context: Updated through November 2026 - Current date:
+November 19, 2026 - Model type: Reasoning-capable large language model"
+
+## Generic Prompt AI Plot
+
+![Plot Generated by ChatGPT](chatgptPlot.png){#fig-AICalcium
+fig-alt="Line chart of average values across eight columns, with peaks near 73 at y1 and y2.1 and lows near 65 at y3 and y3.1."
+fig-pos="H"}
+
+Here is the output of the AI generation that occurred alongside the
+visualization creation:
+
+"Prompt: Create a data visualization for these data. Calcium.csv
+
+I created a visualization showing the average value of each column in your
+dataset. What this shows: • Each point represents the mean (average) of one
+column (y0, y1, y2, y3, etc.). • You can quickly compare which variables tend to
+have higher or lower values overall. • For example, some columns cluster around
+\~70–73, while others drop closer to \~65.
+
+If you want something more insightful, I can also create: • Boxplots (to show
+spread and outliers) • Time series plots (if rows represent time/order) •
+Correlation heatmaps • Side-by-side comparisons (e.g., y0 vs y0.1) Just tell me
+👍 Prompt: What is your version information? You’re chatting with ChatGPT based
+on the GPT-5.3 architecture. Key details: • Model: GPT-5.3 • Knowledge cutoff:
+August 2025 • Current date (system): March 31, 2026 If you need more technical
+details (capabilities, differences vs GPT-4/5, etc.), just let me know 👍 (This
+chat took place on Tuesday, March 31st, 2026.)"
+
+## Human-made plot
+
+```{r}
+#| label: fig-humanCalcium
+#| fig-cap: "Human-coded Calcium Study Analysis Plot"
+#| fig-alt: >- 
+#|  "Line graph of mean calcium levels for control and 
+#|  treatment groups from Years 0–3; both drop sharply at Year 3."
+#| fig-width: 7
+#| fig-height: 4
+calcium_Raw <- read.csv(
+  file = "calcium.csv",
+  header = TRUE,
+  sep = ","
+)
+# Step 3: Wrangle Data ----
+calcium_Tidy <- calcium_Raw |>
+  summarise(
+    across(
+      .cols = starts_with("y"),
+      .fns = ~ round(mean(.x, na.rm = TRUE), digits = 3)
+    )
+  ) |>
+  pivot_longer(
+    cols = everything(),
+    names_to = "raw_Name",
+    values_to = "calcium_Level"
+  ) |>
+  separate_wider_delim(
+    cols = raw_Name,
+    delim = ".",
+    names = c("year", "group"),
+    too_few = "align_start"
+  ) |>
+  mutate(
+    year = as.numeric(str_remove(year, "y")),
+    group = ifelse(is.na(group), "Control", "Treatment")
+  )
+## Create Line Graph of Calcium Levels ----
+ggplot(
+  data = calcium_Tidy,
+  mapping = aes(
+    x = year,
+    y = calcium_Level,
+    color = group
+  )
+) +
+  geom_line(linewidth = 1.25) +
+  geom_point(size = 2.5) +
+  scale_color_manual( 
+    values = c("#1E407C", "#BC204B")) +
+  labs(
+    title = "Mean Calcium Levels in Women Over a Three-Year Study",
+    subtitle = "Comparing Control vs. Special Diet and Exercise
+    Treatment Groups (Years 0–3)",
+    x = "Year",
+    y = "Mean Calcium Level",
+    color = "Condition",
+    alt = "Line graph of mean calcium levels for control and treatment
+    groups from Years 0–3; both drop sharply at Year 3."
+  ) +
+  theme_bw() +
+  theme(
+    legend.position = "bottom"
+  )
+```
+
+## Comparison
+
+Contrasting the three data visualization displays the importance of human
+analytic reasoning and planning. @fig-informedCalcium was generated using a plan
+that was created with an understanding of the context of the study, which mean
+the AI was able to properly wrangle the data into a format that was capable of
+highlighting the results of the study. It has many features that @fig-AICalcium
+does not, including a proper title and subtitle, colors, a legend, and separated
+glyphs for the two groups of the experiment. In contrast, with a generic prompt,
+ChatGPT only knew the numbers, and not the situation, leading to it creating a
+chart that doesn't depict the intention of the study. Because of how the
+original data file was formatted, the AI combined both experimental groups onto
+a single x-axis rather than separating them for comparison. The generic-prompted
+chart misrepresents the structure of the experiment, while the plan-informed
+chart is able to accurately convey the data and the message it supports. There
+are few differences between the human-made chart, @fig-humanCalcium, and
+@fig-informedCalcium, due to the precision of the plan, they are almost
+identical apart from differences in the title and subtitle, and the grid lines.
+This shows that even with a very precise plan, the human mind's ability to truly
+comprehend context gives it an advantage over generative AI.
+
+# Reflection
+
+I have learned a great amount of information about the world of R and
+statistical analysis during this semester. The main topics which I have found
+the most important are learning the principles of data and open science,
+learning how to wrangle data, learning how to create tables and data
+visualizations, learning what makes a strong data visualization, learning how to
+make plans, and learning how to use quarto markdown. I have learned that the key
+behind strong statistical analysis and a healthy community is responsibility,
+respect, and making things easily accessible. There are many principles behind
+how statistics should be handled, and I've learned that different situations
+have their different rules. For example, it is a key principle that statistical
+analysis should not be used to discriminate or harm marginalized communities,
+and it is important that all authors of a project be properly credited. I've
+learned that one of the first steps to any analysis is wrangling data, which was
+key in how I created @fig-humanCalcium. Often times data will be in a format
+that isn't suitable for analysis, so a statistician must use their skills to
+work the data into a format that they can have for further use, such as making a
+data visualization. @fig-monteCarlo demonstrates how there are many aspects that
+go into creating data visualizations, from elementary perceptual tasks, to
+different types of displays, to even things like faceting. It is up to the
+statistician to decide what a data visualization should look like, and they must
+consider their audience, as well as the needs of the differently-abled. Data
+visualizations are meant to convey a message that one could miss if they were to
+just look at the data itself. I've learned that certain EPTs are easier for the
+general public to understand, like direction, while some like shading are more
+difficult, which factors into the statistician's decisions. I would say that
+making data visualizations is my favorite part of statistics, I find them very
+enjoyable to create, and I think making them is one of my best strengths as a
+statistician. I've learned through experience that planning is a critical part
+of every process, which can be seen in @sec-Plan, as well as in the differences
+between @Fig-informedCalcium and @Fig-AICalcium. Making a plan is an important
+step for staying grounded and on task. I think that making plans is something
+that I can improve on, as I tend to channel my effort into the other processes
+rather than focusing on it initially, which is something I should try to change.
+Quarto markdown is a new concept, but I understand that it is the bridge between
+code and a proper report, so it is something that I need to practice and focus
+on for the future.
+
+# Appendix A: GenAI Usage {.unnumbered}
+
+I used the ASU Image Accessibility AI Tool on 11/4/26, which uses the GPT-4o
+model by OpenAI. I provided a PNG version of the plot that I submitted in part B
+of this assignment. I received the following verbatim result:
+
+"Long Description:
+
+A two-panel scatter plot compares average team and opponent field-goal
+percentages for AP Top 25 NCAA women’s basketball teams in the 2026 season. Team
+field-goal percentage appears on the horizontal axis, increasing from about 42%
+to 52%; opponent field-goal percentage appears on the vertical axis, increasing
+downward from about 35% to 42.5%. Team logos mark each team’s position. Both
+panels have reference lines at averages of 46.33% for team shooting and 38.35%
+for opponent shooting, dividing the plots into four labeled performance regions.
+
+The left panel, “Contender Tier (65%-79% Wins),” contains most of the plotted
+teams. Logos cluster around 44%–46% team shooting and 36%–40.5% opponent
+shooting, with a few teams near 47%–48% team shooting and roughly 40.5%–42.5%
+opponent shooting. The right panel, “Elite Tier (80%+ Wins),” shows a smaller
+group: several teams near 50%–52% team shooting and 33%–36% opponent shooting;
+Texas is near 49.5% and 38%; and Michigan, West Virginia, and Vanderbilt cluster
+around 45.5%–46.5% team shooting and 40.5%–41.5% opponent shooting. Light grid
+lines and gray labels mark the regions, including “Strong Both Ways,” “Weak Both
+Ways,” “Weak Offense & Strong Defense,” and “Strong Offense & Weak Defense.”
+
+Alt-text:
+
+Two-panel scatter plot of 2026 women’s basketball teams, with team logos
+positioned by team and opponent field-goal percentages; elite-tier teams include
+several high-shooting, strong-defense teams.
+
+Transcribed Text:
+
+NCAA Women's Basketball 2026 Shooting Efficiency Landscape AP Top 25 Teams Final
+2026 Season Rankings Faceted by Win Thresholds Contender Tier (65%-79% Wins)
+Elite Tier (80%+ Wins) Average Team Season Field Goal % Average Opponent Season
+Field Goal % Avg: 46.33% Avg: 38.35% Weak Offense & Strong Defense Strong Both
+Ways Weak Both Ways Strong Offense & Weak Defense"
+
+I used the ASU Image Accessibility AI Tool on 11/19/26, which used the GPT-4o
+model by OpenAI. I provided a PNG version of the plot that I submitted in part C
+of this assignment. I received the following verbatim result:
+
+"Long Description:
+
+A scatter plot titled “Monte Carlo Integration Example, n = 10” shows a black
+curve and ten colored data points across x-values from 0 to 20. The curve starts
+near (0, 0), rises to a peak of about 0.15 around x = 3, then declines gradually
+toward zero. Eight dark red points are labeled “above” in the legend, and two
+green points are labeled “on/below.” The green points appear near (5, 0.085) and
+(11.5, 0.008); the red points are distributed across the plot, including several
+above the curve. The horizontal axis is labeled “x,” the vertical axis “y,” and
+the chart states “Est. Numerical Integration = 0.64.” Light gray gridlines mark
+the plotting area.
+
+Alt-text:
+
+Monte Carlo integration graph showing a curve that peaks near x = 3, with eight
+magenta “above” points and two green “on/below” points; estimated numerical
+integration is 0.64.
+
+Transcribed Text:
+
+Monte Carlo Integration Example, n = 10 Est. Numerical Integration = 0.64 y x
+Flag above on/below"
+
+I used the ASU Image Accessibility AI Tool on 11/19/26, which used the GPT-4o
+model by OpenAI. I provided a PNG version of the plot that I submitted in part C
+of this assignment. I received the following verbatim result:
+
+"Long Description:
+
+A scatter plot titled “Monte Carlo Integration Example, n = 100” shows 100
+colored data points alongside a thin black curve. The horizontal axis is labeled
+“x” and runs from 0 to 20; the vertical axis is labeled “y” and ranges from 0 to
+about 0.16. The curve starts near (0, 0), rises steeply to a peak of about 0.15
+near x = 3, then declines gradually toward zero by x = 20. Green points labeled
+“on/below” lie on or below the curve, mostly at x values below 10. Dark red
+points labeled “above” lie above the curve, mostly at x values from about 5 to
+20. The text above the plot reads “Est. Numerical Integration = 1.216.” A legend
+below the plot identifies the red and green categories.
+
+Alt-text:
+
+Scatter plot of 100 points around a curve that peaks near x = 3 and declines
+toward zero; points are colored red for “above” and green for “on/below.”
+Estimated numerical integration: 1.216.
+
+Transcribed Text:
+
+Monte Carlo Integration Example, n = 100 Est. Numerical Integration = 1.216 y x
+Flag above on/below"
+
+I used the ASU Image Accessibility AI Tool on 11/19/26, which used the GPT-4o
+model by OpenAI. I provided a PNG version of the plot that I submitted in part C
+of this assignment. I received the following verbatim result:
+
+"A scatter plot illustrates a Monte Carlo integration example with 1,000 sampled
+points and a black curve. The horizontal axis is labeled “x” and runs from 0 to
+20; the vertical axis is labeled “y” and runs from 0 to about 0.17. The curve
+rises steeply from near the origin, peaks around x = 3 at y ≈ 0.15, then
+declines gradually toward zero by x = 20. Green points labeled “on/below” lie on
+or below the curve, while dark pink points labeled “above” lie above it. The
+chart has a light gray grid. Text above the plot reports an estimated numerical
+integration of 0.9952.
+
+Alt-text:
+
+Scatter plot of 1,000 Monte Carlo points classified as above or on/below a black
+curve; the estimated numerical integration is 0.9952.
+
+Transcribed Text:
+
+Monte Carlo Integration Example, n = 1000 Est. Numerical Integration = 0.9952 y
+0.15 0.10 0.05 0.00 x 0 5 10 15 20 Flag above on/below"
+
+I used the ASU Image Accessibility AI Tool on 11/19/26, which used the GPT-4o
+model by OpenAI. I provided a PNG version of the plot that I submitted in part C
+of this assignment. I received the following verbatim result:
+
+"Long Description:
+
+A scatter plot illustrates a Monte Carlo integration example with 10,000 points.
+The horizontal axis is labeled “x” and runs from 0 to 20; the vertical axis is
+labeled “y” and runs from 0 to about 0.17. A black curved line rises steeply
+from the origin to a peak near x = 3 and y = 0.15, then slopes downward toward y
+= 0 near x = 20. Green points labeled “on/below” cluster beneath the curve,
+while dark pink points labeled “above” fill the area above it. The estimated
+numerical integration value shown is 1.0147.
+
+Alt-text:
+
+Monte Carlo scatter plot of 10,000 points, with green points at or below a
+peaked black curve and magenta points above; estimated numerical integration is
+1.0147.
+
+Transcribed Text:
+
+Monte Carlo Integration Example, n = 10000 Est. Numerical Integration = 1.0147 y
+x Flag above on/below"
+
+I used the ASU Image Accessibility AI Tool on 11/19/26, which used the GPT-4o
+model by OpenAI. I provided a PNG version of the plot that I submitted in part D
+of this assignment, as well as the additional detail paragraph of "These data
+come from a longetudinal study that followed 31 women over the course of four
+years. At the start of the study, researchers measured the amount of calcium in
+the ulna from each woman's dominant arm through photon absorptiometry.
+Throughout the next four years, 15 of the women went about their lives as they
+typically did; they make up the null treatment group haivng not received any
+special treatment. The other 16 women spent the next four years receiving
+special help with their diet and completing a regular exercise program; they
+make up the diet/exercise treatment group. Once a year each of thee 31 women had
+their ulnar calcium levels measured.". I received the following verbatim result:
+
+"Long Description:
+
+A line graph titled “Mean Calcium Levels Over Three Years” compares calcium
+levels in control and treatment groups across four measurement years. The
+horizontal axis is labeled “Year,” with points for Year 0 through Year 3; the
+vertical axis is labeled “Mean Calcium Level,” with gridlines at 66, 68, 70, and
+72. The dark blue control line rises from about 72.4 at Year 0 to 73.3 at Year
+1, dips slightly to 72.5 at Year 2, then drops sharply to about 64.8 at Year 3.
+The dark red treatment line rises from about 69.3 at Year 0 to 70.7 at Year 1
+and 71.2 at Year 2, then falls to about 64.5 at Year 3. The control value is
+higher at every measurement year. A legend beneath the graph identifies the two
+groups. A caption below reads, “Average calcium levels for the control and
+treatment groups at each measurement year.”
+
+Alt-text:
+
+Line graph comparing mean calcium levels in control and treatment groups from
+Year 0 to Year 3; both drop sharply at Year 3.
+
+Transcribed Text:
+
+Mean Calcium Levels Over Three Years Mean Calcium Level Year Year 0 Year 1 Year
+2 Year 3 Control Treatment Average calcium levels for the control and treatment
+groups at each measurement year."
+
+I used the ASU Image Accessibility AI Tool on 11/19/26, which used the GPT-4o
+model by OpenAI. I provided a PNG version of the plot that I submitted in part C
+of this assignment. I received the following verbatim result:
+
+"Long Description:
+
+A line chart titled “Average Values per Column” shows average values across
+eight columns. The blue line starts near 72.4 at y0, rises to about 73.3 at y1,
+then dips to 72.5 at y2. It drops sharply to about 64.8 at y3, climbs through
+about 69.3 at y0.1 and 70.7 at y1.1 to roughly 71.2 at y2.1, then falls to about
+64.5 at y3.1. The horizontal axis is labeled “Columns,” and the vertical axis is
+labeled “Average.”
+
+Alt-text:
+
+Line chart of average values across eight columns, with peaks near 73 at y1 and
+y2.1 and lows near 65 at y3 and y3.1.
+
+Transcribed Text:
+
+Average Values per Column Average Columns y0 y1 y2 y3 y0.1 y1.1 y2.1 y3.1"
+
+I used the ASU Image Accessibility AI Tool on 11/19/26, which used the GPT-4o
+model by OpenAI. I provided a PNG version of the plot that I submitted in part D
+of this assignment, as well as the additional detail paragraph of "These data
+come from a longetudinal study that followed 31 women over the course of four
+years. At the start of the study, researchers measured the amount of calcium in
+the ulna from each woman's dominant arm through photon absorptiometry.
+Throughout the next four years, 15 of the women went about their lives as they
+typically did; they make up the null treatment group haivng not received any
+special treatment. The other 16 women spent the next four years receiving
+special help with their diet and completing a regular exercise program; they
+make up the diet/exercise treatment group. Once a year each of thee 31 women had
+their ulnar calcium levels measured.". I received the following verbatim result:
+
+"Long Description:
+
+A line chart compares mean calcium levels in women across years 0–3 for a
+control group and a diet-and-exercise treatment group. The vertical axis is
+labeled “Mean Calcium Level,” and the horizontal axis is labeled “Year.” Both
+groups’ values rise or remain fairly steady from year 0 to year 2, then drop
+sharply by year 3. The control group (dark blue) is higher than the treatment
+group (red) at every measurement: about 72.4, 73.3, 72.5, and 64.8; the
+treatment group is about 69.3, 70.7, 71.2, and 64.5. Each value is shown with a
+circular marker joined by a solid line.
+
+Alt-text:
+
+Line graph of mean calcium levels for control and treatment groups from Years
+0–3; both drop sharply at Year 3.
+
+Transcribed Text:
+
+Mean Calcium Levels in Women Over a Three-Year Study Comparing Control vs.
+Special Diet and Exercise Treatment Groups (Years 0–3) Mean Calcium Level Year
+Condition Control Treatment 72 70 68 66 0 1 2 3"
+
+I used the ChatGPT-6 model made by OpenAI to create the plan-informed data
+visualization. Prompt: "Use the following plan: (@sec-Plan) Calcium.csv". I
+received the following verbatim result:
+
+"I've inspected the uploaded calcium.csv file. It contains 16 observations and 8
+columns, matching the original column structure in your plan: - y0, y1, y2, y3 —
+Control group - y0.1, y1.1, y2.1, y3.1 — Treatment group The appropriate
+approach is to calculate the mean calcium level for each group at each of the
+four time points (years 0–3), reshape the results into tidy format, and create a
+two-line comparison graph. 1. Completed visualization Completed
+
+The graph uses the requested PSU colors: - Control: Navy blue (#1E407C) -
+Treatment: Pink (#BC204B) 2. Calculated mean values Year Control Treatment 0
+72.380 69.288 1 73.293 70.656 2 72.473 71.181 3 64.787 64.531
+
+3.  Analysis
+
+- Both groups increase initially, although the control group peaks in Year 1.
+- The treatment group continues increasing through Year 2.
+- Both groups experience a substantial decline in Year 3.
+- The difference between the groups narrows considerably over time, from 3.092
+  in Year 0 to just 0.256 in Year 3.
+
+4.  Files
+
+- Download the completed visualization (PNG)
+- Download the complete RStudio script The R script follows your specified
+  workflow, including summarise(), across(), pivot_longer(),
+  separate_wider_delim(), mutate(), and ggplot().
+
+One important note: The script calculates the means before pivoting because the
+goal is to compare the average calcium levels of the two groups across the four
+years.
+
+calcium_levels_plot.png calcium_analysis.R"
+
+I used the ChatGPT-6 model made by OpenAI to follow up and ask for the
+information on the model. Prompt: "What is your version information?" I received
+the following verbatim result:
+
+"I am GPT-6, developed by OpenAI. - Model: GPT-6 - Knowledge context: Updated
+through November 2026 - Current date: November 19, 2026 - Model type:
+Reasoning-capable large language model"
+
+# Appendix B: Code Appendix {.unnumbered}
+
+```{r}
+#| ref.label: !expr knitr::all_labels()
+#| echo: true
+#| eval: false
+```
